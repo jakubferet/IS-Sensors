@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="content">
+    <form method="POST" action="" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <h2 class="border-bottom mb-4">{{ title }}</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="my-3">
+                    {{ form.name.label(class="form-label") }}
+                    {% if form.name.errors %}
+                        {{ form.name(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.name.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.name(class="form-control") }}
+                    {% endif %}
+                </div>
+                {% if form.category %}
+                    <div class="mb-3">
+                        {{ form.category.label(class="form-label") }}
+                        {% if form.category.errors %}
+                            {{ form.category(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.category.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.category(class="form-select") }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if form.manufacturer %}
+                    <div class="mb-3">
+                        {{ form.manufacturer.label(class="form-label") }}
+                        {% if form.manufacturer.errors %}
+                            {{ form.manufacturer(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.manufacturer.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.manufacturer(class="form-select") }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if form.price %}
+                    <div class="mb-3">
+                        {{ form.price.label(class="form-label") }}
+                        {% if form.price.errors %}
+                            {{ form.price(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.price.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.price(class="form-control") }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if form.description %}
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {% if form.description.errors %}
+                            {{ form.description(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.description(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-6 d-flex flex-column justify-content-center">
+                {% if picture %}
+                    <img class="image mb-5 mx-auto" src="{{ url_for('static', filename='images/'+picture) }}">
+                {% endif %}
+                {% if form.picture %}
+                    <div class="mb-3 mx-auto">
+                        {{ form.picture.label(class="form-label") }}<br>
+                        {{ form.picture(class="form-control-file") }}
+                        {% if form.picture.errors %}
+                            {% for error in form.picture.errors %}
+                                <br><span class="text-danger">{{ error }}</span><br>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {{ form.submit(class="btn btn-secondary") }}
+    </form>
+</div>
+{% endblock content %}

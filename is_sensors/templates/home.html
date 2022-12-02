@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="pt-5">
+    <div class="row justify-content-center text-center" id="home-collapse-nav">
+      <div class="home-dropdown col-md-3">
+        <a data-bs-toggle="collapse" href="#sensors-collapse">
+          <div class="home-dropdown-header dropdown-toggle">Čidla</div>
+        </a>
+        <div id="sensors-collapse" class="collapse" data-bs-parent="#home-collapse-nav">
+          <div class="home-dropdown-body">
+            {% for sensor in sensors %}
+              <a href="{{ url_for('readSensor', id=sensor.id) }}"><div class="home-dropdown-item">{{ sensor.name }}</div></a>
+            {% endfor %}
+            <a href="{{ url_for('sensors') }}"><div class="home-dropdown-item">...</div></a>
+          </div>
+        </div>
+      </div>
+      <div class="home-dropdown col-md-3">
+        <a data-bs-toggle="collapse" href="#categories-collapse">
+          <div class="home-dropdown-header dropdown-toggle">Kategorie</div>
+        </a>
+        <div id="categories-collapse" class="collapse" data-bs-parent="#home-collapse-nav">
+          <div class="home-dropdown-body">
+            {% for category in categories %}
+              <a href="{{ url_for('readCategory', id=category.id) }}"><div class="home-dropdown-item">{{ category.name }}</div></a>
+            {% endfor %}
+            <a href="{{ url_for('categories') }}"><div class="home-dropdown-item">...</div></a>
+          </div>
+        </div>
+      </div>
+      <div class="home-dropdown col-md-3">
+        <a data-bs-toggle="collapse" href="#manufacturers-collapse">
+          <div class="home-dropdown-header dropdown-toggle">Výrobci</div>
+        </a>
+        <div id="manufacturers-collapse" class="collapse" data-bs-parent="#home-collapse-nav">
+          <div class="home-dropdown-body">
+            {% for manufacturer in manufacturers %}
+              <a href="{{ url_for('readManufacturer', id=manufacturer.id) }}"><div class="home-dropdown-item">{{ manufacturer.name }}</div></a>
+            {% endfor %}
+            <a href="{{ url_for('manufacturers') }}"><div class="home-dropdown-item">...</div></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

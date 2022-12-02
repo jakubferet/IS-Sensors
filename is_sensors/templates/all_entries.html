@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="content">
+    <div class="d-flex justify-content-end">
+      <a class="btn btn-secondary" href="{{ url_for(create) }}">{{ new }}</a>
+    </div>
+    <h2 class="border-bottom mb-4">{{ title }}</h2>
+    <div class="row d-flex justify-content-center">
+      {% for item in items %}
+        <a class="item col-md-3" href="{{ url_for(read, id=item.id) }}">
+          <div>
+            <img class="image d-block mx-auto mb-1" src="{{ url_for('static', filename='images/'+item.picture) }}">
+            <h5>{{ item.name }}</h5>
+            {% if item.category %}
+              <p>{{ item.category.name }}</p>
+            {% endif %}
+            {% if item.manufacturer %}
+              <p>{{ item.manufacturer.name }}</p>
+            {% endif %}
+            {% if item.price %}
+              <p>{{ item.price }} Kč</p>
+            {% endif %}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock content %}

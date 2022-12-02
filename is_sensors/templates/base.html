@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Sensor IS</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="d-flex flex-column">
+  <header>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark justify-content-center">
+      <div class="container-fluid py-2 px-5">
+        <a class="navbar-brand w-50 me-auto d-flex" href="{{ url_for('home') }}">Sensor IS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse w-100" id="collapsibleNavbar">
+          <form method="POST" action="{{ url_for('search') }}" class="w-100 d-flex justify-content-center">
+            {{ form.hidden_tag() }}
+            <input class="form-control w-50 me-2" name="search" placeholder="Zadejte hledaný výraz">
+            <button class="btn btn-secondary" type="submit">Hledat</button>
+          </form>
+          <ul class="navbar-nav w-100 ms-auto justify-content-end">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('sensors') }}">Čidla</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('categories') }}">Kategorie</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('manufacturers') }}">Výrobci</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+<!--container flex-fill bg-white-->
+  <div class="container flex-fill">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} m-1">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <div class="m-3">
+      {% if not hideBreadcrumbs %}
+        <ul class="breadcrumb">
+          {% for breadcrumb in breadcrumbs %}
+            {% if not loop.last %}
+              <li class="breadcrumb-item"><a href="{{ breadcrumb.url }}" class="link-dark">{{ breadcrumb.text }}</a></li>
+            {% else %}
+              <li class="breadcrumb-item active">{{ breadcrumb.text }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+    {% block content %}{% endblock %}
+  </div>
+
+  <footer>
+    <div class="p-2 bg-dark text-white text-center">
+      <span>Jakub Feret 2023</span>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

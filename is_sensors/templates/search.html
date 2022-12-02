@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="content">
+    <h2 class="border-bottom mb-4">Výsledky vyhledávání pro &ldquo;<strong>{{ searched }}</strong>&rdquo;</h2>
+    {% if sensors or categories or manufacturers %}
+      {% if sensors %}
+        <h4>Čidla:</h4>
+        <div class="row d-flex justify-content-center">
+          {% for sensor in sensors %}
+            <a class="item col-md-3" href="{{ url_for('readSensor', id=sensor.id) }}">
+              <div>
+                <img class="image d-block mx-auto mb-1" src="{{ url_for('static', filename='images/'+sensor.picture) }}">
+                <h5>{{ sensor.name }}</h5>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% if categories %}
+        <h4>Kategorie:</h4>
+        <div class="row d-flex justify-content-center">
+          {% for category in categories %}
+            <a class="item col-md-3" href="{{ url_for('readCategory', id=category.id) }}">
+              <div>
+                <img class="image d-block mx-auto mb-1" src="{{ url_for('static', filename='images/'+category.picture) }}">
+                <h5>{{ category.name }}</h5>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% if manufacturers %}
+        <h4>Výrobci:</h4>
+        <div class="row d-flex justify-content-center">
+          {% for manufacturer in manufacturers %}
+            <a class="item col-md-3" href="{{ url_for('readManufacturer', id=manufacturer.id) }}">
+              <div>
+                <img class="image d-block mx-auto mb-1" src="{{ url_for('static', filename='images/'+manufacturer.picture) }}">
+                <h5>{{ manufacturer.name }}</h5>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% else %}
+      <p>Pro výraz &ldquo;<strong>{{ searched }}</strong>&rdquo; nebylo nic nalezeno.</p>
+    {% endif %}
+  </div>
+{% endblock content %}

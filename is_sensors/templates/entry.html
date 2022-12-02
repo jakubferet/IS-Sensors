@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="content">
+    <div class="row">
+      <div class="col-md-4 d-flex justify-content-center">
+        <img class="image" src="{{ url_for('static', filename='images/'+item.picture) }}">
+      </div>
+      <div class="col-md-6 ps-5">
+        <h2 class="mb-4">{{ item.name }}</h2>
+        <div class="d-grid justify-content-start">
+          {% if type == 'sensor' %}
+            {% if item.category %}
+              <p>Kategorie: <a href="{{ url_for('readCategory', id=item.category.id) }}" class="link-dark fw-bold">{{ item.category.name }}</a></p>
+            {% endif %}
+            {% if item.manufacturer %}
+              <p>Výrobce: <a href="{{ url_for('readManufacturer', id=item.manufacturer.id) }}" class="link-dark fw-bold">{{ item.manufacturer.name }}</a></p>
+            {% endif %}
+            {% if item.price %}
+              <p>Průměrná cena: <span class="fw-bold">{{ item.price }} Kč</span></p>
+            {% endif %}
+          {% elif type == 'category' %}
+            <a class="btn btn-dark mb-3" href="{{ url_for('category_manufacturers', id=item.id) }}">Výrobci</a>
+            <a class="btn btn-dark" href="{{ url_for('category_sensors', id=item.id) }}">Čidla</a>
+          {% elif type == 'manufacturer' %}
+            <a class="btn btn-dark mb-3" href="{{ url_for('manufacturer_categories', id=item.id) }}">Kategorie</a>
+            <a class="btn btn-dark" href="{{ url_for('manufacturer_sensors', id=item.id) }}">Čidla</a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-md-2 ps-5 d-grid gap-3 align-self-end">
+        <a class="btn btn-secondary" href="{{ url_for(update, id=item.id) }}">Upravit</a>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Odstranit</button>
+      </div>
+    </div>
+    <hr class="my-4">
+    <div class="col-md-10">
+      {% if item.description %}
+        <h3>Popis</h3>
+        <p>{{ item.description }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+<!-- Modal -->
+  <div class="modal fade" id="deleteModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Odstranit tuto položku?</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Storno</button>
+          <form action="{{ url_for(delete, id=item.id) }}" method="POST">
+            <button class="btn btn-danger" type="submit">Odstranit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

@@ -1,0 +1,22 @@
+services:
+
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=sensors
+    ports:
+      - 5432:5432
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pgadmin@pgadmin.com
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin
+    ports:
+      - 31003:80
+    depends_on:
+      - postgres
