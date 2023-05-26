@@ -6,7 +6,7 @@ new gridjs.Grid({
         { id: 'name', name: 'Název', formatter: (_, row) => gridjs.html(`<a href="/sensor/${row.cells[0].data}" class="table-link fw-bold">${row.cells[3].data}</a>`) },
         { id: 'category_name', name: 'Kategorie', formatter: (_, row) => gridjs.html(`<a href="/category/${row.cells[1].data}" class="table-link">${row.cells[4].data}</a>`) },
         { id: 'manufacturer_name', name: 'Výrobce', formatter: (_, row) => gridjs.html(`<a href="/manufacturer/${row.cells[2].data}" class="table-link">${row.cells[5].data}</a>`) },
-        { id: 'price', name: 'Průměrná cena [Kč]' },
+        //{ id: 'price', name: 'Průměrná cena [Kč]' },
     ],
     pagination: {
         enable: true,
@@ -48,7 +48,7 @@ new gridjs.Grid({
             sensor.name,
             sensor.category_name,
             sensor.manufacturer_name,
-            sensor.price,
+            //sensor.price,
         ]),
     },
 }).render(document.getElementById("table-wrapper"));

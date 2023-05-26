@@ -1,30 +1,11 @@
-import os
-import secrets
-from PIL import Image
+from sqlalchemy import func
 from flask_breadcrumbs import register_breadcrumb
 from flask import render_template, url_for, redirect, flash, request
 
 from is_sensors import app, db
 from is_sensors.models import Sensor, Manufacturer, Category
-from is_sensors.forms import SensorForm, ManufacturerForm, CategoryForm, SearchForm
+from is_sensors.forms import SensorForm, ManufacturerForm, CategoryForm, SearchForm, new_picture, delete_old_picture
 
-
-def new_picture(picture):
-    size = (200, 200)
-    random_name = 'img'+secrets.token_hex(4)
-    _, ext = os.path.splitext(picture.filename)
-    picture_name = random_name+ext
-    picture_path = os.path.join(app.root_path, 'static\\images', picture_name)
-    image = Image.open(picture)
-    image.thumbnail(size)
-    image.save(picture_path)
-    return picture_name
-
-def delete_old_picture(picture):
-    if picture != 'default.png':
-        old_picture = os.path.join(app.root_path, 'static\\images', picture)
-        if os.path.exists(old_picture):
-            os.remove(old_picture)
 
 @app.route("/")
 @app.route("/home")
@@ -45,9 +26,9 @@ def search():
     form = SearchForm()
     if form.validate_on_submit():
         searched = form.search.data
-        sensors = Sensor.query.filter(Sensor.name.contains(searched))
-        categories = Category.query.filter(Category.name.contains(searched))
-        manufacturers = Manufacturer.query.filter(Manufacturer.name.contains(searched))
+        sensors = Sensor.query.filter(func.upper(Sensor.name).contains(func.upper(searched))).all()
+        categories = Category.query.filter(func.upper(Category.name).contains(func.upper(searched))).all()
+        manufacturers = Manufacturer.query.filter(func.upper(Manufacturer.name).contains(func.upper(searched))).all()
         return render_template('search.html', searched=searched, sensors=sensors, categories=categories, manufacturers=manufacturers, form=form, hideBreadcrumbs=True)
 
 @app.route("/sensors/data")
@@ -62,6 +43,17 @@ def sensors():
     url_data = url_for('sensorsData')
     return render_template('table.html', url_data=url_data)
 
+def get_sensor_name():
+    id = request.view_args['id']
+    sensor = Sensor.query.get(id)
+    return [{'text': sensor.name, 'url': url_for('readSensor', id=id)}]
+
+@app.route("/sensor/<int:id>")
+@register_breadcrumb(app, '.sensors.sensor', '', dynamic_list_constructor=get_sensor_name)
+def readSensor(id):
+    sensor = Sensor.query.get_or_404(id)
+    return render_template('entry.html', item=sensor, type='sensor', update='updateSensor', delete='deleteSensor')
+
 @app.route("/sensor/create", methods=['GET', 'POST'])
 @register_breadcrumb(app, '.sensors.create', 'Přidat nové čidlo')
 def createSensor():
@@ -69,7 +61,7 @@ def createSensor():
     form.category.choices = [(category.id, category.name) for category in Category.query.order_by('name')]
     form.manufacturer.choices = [(manufacturer.id, manufacturer.name) for manufacturer in Manufacturer.query.order_by('name')]
     if form.validate_on_submit():
-        sensor = Sensor(name=form.name.data, price=form.price.data, description=form.description.data, manufacturer_id=form.manufacturer.data, category_id=form.category.data)
+        sensor = Sensor(name=form.name.data, description=form.description.data, manufacturer_id=form.manufacturer.data, category_id=form.category.data)
         category = Category.query.get_or_404(form.category.data)
         manufacturer = Manufacturer.query.get_or_404(form.manufacturer.data)
         category.manufacturers.append(manufacturer)
@@ -83,17 +75,6 @@ def createSensor():
         return redirect(url_for('sensors'))
     return render_template('user_input.html', title='Přidat nové čidlo', form=form)
 
-def get_sensor_name():
-    id = request.view_args['id']
-    sensor = Sensor.query.get(id)
-    return [{'text': sensor.name, 'url': url_for('readSensor', id=id)}]
-
-@app.route("/sensor/<int:id>")
-@register_breadcrumb(app, '.sensors.sensor', '', dynamic_list_constructor=get_sensor_name)
-def readSensor(id):
-    sensor = Sensor.query.get_or_404(id)
-    return render_template('entry.html', item=sensor, type='sensor', update='updateSensor', delete='deleteSensor')
-
 @app.route("/sensor/<int:id>/update", methods=['GET', 'POST'])
 @register_breadcrumb(app, '.sensors.sensor.update', 'Aktualizovat čidlo')
 def updateSensor(id):
@@ -104,20 +85,18 @@ def updateSensor(id):
     picture = sensor.picture
     if request.method == 'GET':
         form.name.data = sensor.name
-        form.price.data = sensor.price
         form.description.data = sensor.description
         form.category.data = sensor.category_id
         form.manufacturer.data = sensor.manufacturer_id
     elif form.validate_on_submit():
         sensor.name = form.name.data
-        sensor.price = form.price.data
         sensor.description = form.description.data
         sensor.category_id = form.category.data
         sensor.manufacturer_id = form.manufacturer.data
         if form.picture.data:
             delete_old_picture(picture)
             picture_file = new_picture(form.picture.data)
-            picture = picture_file
+            sensor.picture = picture_file
         db.session.commit()
         flash('Čidlo bylo aktualizováno.', 'success')
         return redirect(url_for('readSensor', id=sensor.id))
@@ -126,6 +105,8 @@ def updateSensor(id):
 @app.route("/sensor/<int:id>/delete", methods=['POST'])
 def deleteSensor(id):
     sensor = Sensor.query.get_or_404(id)
+    picture = sensor.picture
+    delete_old_picture(picture)
     db.session.delete(sensor)
     db.session.commit()
     flash('Čidlo bylo odstraněno.', 'success')
@@ -136,6 +117,17 @@ def deleteSensor(id):
 def categories():
     categories = Category.query.all()
     return render_template('all_entries.html', items=categories, read='readCategory', create='createCategory', title='Kategorie', new='Nová kategorie')
+
+def get_category_name():
+    id = request.view_args['id']
+    category = Category.query.get(id)
+    return [{'text': category.name, 'url': url_for('readCategory', id=id)}]
+
+@app.route("/category/<int:id>")
+@register_breadcrumb(app, '.categories.category', '', dynamic_list_constructor=get_category_name)
+def readCategory(id):
+    category = Category.query.get_or_404(id)
+    return render_template('entry.html', item=category, type='category', update='updateCategory', delete='deleteCategory')
 
 @app.route("/category/create", methods=['GET', 'POST'])
 @register_breadcrumb(app, '.categories.create', 'Přidat novou kategorii')
@@ -152,17 +144,6 @@ def createCategory():
         return redirect(url_for('categories'))
     return render_template('user_input.html', title='Přidat novou kategorii', form=form)
 
-def get_category_name():
-    id = request.view_args['id']
-    category = Category.query.get(id)
-    return [{'text': category.name, 'url': url_for('readCategory', id=id)}]
-
-@app.route("/category/<int:id>")
-@register_breadcrumb(app, '.categories.category', '', dynamic_list_constructor=get_category_name)
-def readCategory(id):
-    category = Category.query.get_or_404(id)
-    return render_template('entry.html', item=category, type='category', update='updateCategory', delete='deleteCategory')
-
 @app.route("/category/<int:id>/update", methods=['GET', 'POST'])
 @register_breadcrumb(app, '.categories.category.update', 'Aktualizovat kategorii')
 def updateCategory(id):
@@ -178,7 +159,7 @@ def updateCategory(id):
         if form.picture.data:
             delete_old_picture(picture)
             picture_file = new_picture(form.picture.data)
-            picture = picture_file
+            category.picture = picture_file
         db.session.commit()
         flash('Kategorie byla aktualizována.', 'success')
         return redirect(url_for('readCategory', id=category.id))
@@ -187,6 +168,8 @@ def updateCategory(id):
 @app.route("/category/<int:id>/delete", methods=['POST'])
 def deleteCategory(id):
     category = Category.query.get_or_404(id)
+    picture = category.picture
+    delete_old_picture(picture)
     db.session.delete(category)
     db.session.commit()
     flash('Kategorie byla odstraněna.', 'success')
@@ -194,7 +177,7 @@ def deleteCategory(id):
 
 @app.route("/category/<int:id>/sensors/data")
 def category_sensors_data(id):
-    sensors = Sensor.query.filter_by(category_id=id)
+    sensors = Sensor.query.filter_by(category_id=id).all()
     data = {'data': [sensor.toDict() for sensor in sensors]}
     return data
 
@@ -209,7 +192,7 @@ def category_sensors(id):
 @register_breadcrumb(app, '.categories.category.manufacturers', 'Výrobci')
 def category_manufacturers(id):
     category = Category.query.get_or_404(id)
-    manufacturers = Manufacturer.query.filter(Manufacturer.categories.contains(category))
+    manufacturers = Manufacturer.query.filter(Manufacturer.categories.contains(category)).all()
     return render_template('all_entries.html', items=manufacturers, read='readManufacturer', create='createManufacturer', title=f'Výrobci kategorie {category.name}', new='Nový výrobce')
 
 @app.route("/manufacturers")
@@ -217,6 +200,17 @@ def category_manufacturers(id):
 def manufacturers():
     manufacturers = Manufacturer.query.all()
     return render_template('all_entries.html', items=manufacturers, read='readManufacturer', create='createManufacturer', title='Výrobci', new='Nový výrobce')
+
+def get_manufacturer_name():
+    id = request.view_args['id']
+    manufacturer = Manufacturer.query.get(id)
+    return [{'text': manufacturer.name, 'url': url_for('readManufacturer', id=id)}]
+
+@app.route("/manufacturer/<int:id>")
+@register_breadcrumb(app, '.manufacturers.manufacturer', '', dynamic_list_constructor=get_manufacturer_name)
+def readManufacturer(id):
+    manufacturer = Manufacturer.query.get_or_404(id)
+    return render_template('entry.html', item=manufacturer, type='manufacturer', update='updateManufacturer', delete='deleteManufacturer')
 
 @app.route("/manufacturer/create", methods=['GET', 'POST'])
 @register_breadcrumb(app, '.manufacturers.create', 'Přidat nového výrobce')
@@ -233,17 +227,6 @@ def createManufacturer():
         return redirect(url_for('manufacturers'))
     return render_template('user_input.html', title='Přidat nového výrobce', form=form)
 
-def get_manufacturer_name():
-    id = request.view_args['id']
-    manufacturer = Manufacturer.query.get(id)
-    return [{'text': manufacturer.name, 'url': url_for('readManufacturer', id=id)}]
-
-@app.route("/manufacturer/<int:id>")
-@register_breadcrumb(app, '.manufacturers.manufacturer', '', dynamic_list_constructor=get_manufacturer_name)
-def readManufacturer(id):
-    manufacturer = Manufacturer.query.get_or_404(id)
-    return render_template('entry.html', item=manufacturer, type='manufacturer', update='updateManufacturer', delete='deleteManufacturer')
-
 @app.route("/manufacturer/<int:id>/update", methods=['GET', 'POST'])
 @register_breadcrumb(app, '.manufacturers.manufacturer.update', 'Aktualizovat výrobce')
 def updateManufacturer(id):
@@ -259,7 +242,7 @@ def updateManufacturer(id):
         if form.picture.data:
             delete_old_picture(picture)
             picture_file = new_picture(form.picture.data)
-            picture = picture_file
+            manufacturer.picture = picture_file
         db.session.commit()
         flash('Výrobce byl aktualizován.', 'success')
         return redirect(url_for('readManufacturer', id=manufacturer.id))
@@ -268,6 +251,8 @@ def updateManufacturer(id):
 @app.route("/manufacturer/<int:id>/delete", methods=['POST'])
 def deleteManufacturer(id):
     manufacturer = Manufacturer.query.get_or_404(id)
+    picture = manufacturer.picture
+    delete_old_picture(picture)
     db.session.delete(manufacturer)
     db.session.commit()
     flash('Výrobce byl odstraněn.', 'success')
@@ -275,7 +260,7 @@ def deleteManufacturer(id):
 
 @app.route("/manufacturer/<int:id>/sensors/data")
 def manufacturer_sensors_data(id):
-    sensors = Sensor.query.filter_by(manufacturer_id=id)
+    sensors = Sensor.query.filter_by(manufacturer_id=id).all()
     data = {'data': [sensor.toDict() for sensor in sensors]}
     return data
 
@@ -290,7 +275,7 @@ def manufacturer_sensors(id):
 @register_breadcrumb(app, '.manufacturers.manufacturer.categories', 'Kategorie')
 def manufacturer_categories(id):
     manufacturer = Manufacturer.query.get_or_404(id)
-    categories = Category.query.filter(Category.manufacturers.contains(manufacturer))
+    categories = Category.query.filter(Category.manufacturers.contains(manufacturer)).all()
     return render_template('all_entries.html', items=categories, read='readCategory', create='createCategory', title=f'Kategorie od výrobce {manufacturer.name}', new='Nová kategorie')
 
 @app.errorhandler(404)

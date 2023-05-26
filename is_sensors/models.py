@@ -2,6 +2,7 @@ import datetime
 
 from is_sensors import db
 
+
 category_manufacturer = db.Table('production',
         db.Column('manufacturer_id', db.Integer, db.ForeignKey('manufacturer.id'), primary_key=True),
         db.Column('category_id', db.Integer, db.ForeignKey('category.id'), primary_key=True)
@@ -10,7 +11,7 @@ category_manufacturer = db.Table('production',
 class Sensor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
-    price = db.Column(db.Integer)
+    #price = db.Column(db.Integer)
     description = db.Column(db.Text)
     picture = db.Column(db.String, default='default.png')
     lastchange = db.Column(db.DateTime, default=datetime.datetime.now)
@@ -21,7 +22,7 @@ class Sensor(db.Model):
         return {
             'id': self.id,
             'name': self.name,
-            'price': self.price,
+            #'price': self.price,
             'description': self.description,
             'picture': self.picture,
             'category_id': self.category.id,
@@ -29,7 +30,7 @@ class Sensor(db.Model):
             'category_name': self.category.name,
             'manufacturer_name': self.manufacturer.name
         }
-        
+
 class Manufacturer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -62,6 +63,3 @@ class Category(db.Model):
             'description': self.description,
             'picture': self.picture
         }
-
-#db.drop_all()
-db.create_all()

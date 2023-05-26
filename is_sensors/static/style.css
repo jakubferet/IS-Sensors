@@ -105,3 +105,8 @@ footer {
     height: 200px;
     width: 200px;
 }
+
+.description {
+    white-space: pre;
+    line-height: 1.2;
+}

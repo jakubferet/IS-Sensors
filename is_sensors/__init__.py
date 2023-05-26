@@ -26,3 +26,6 @@ Breadcrumbs(app=app)
 db = SQLAlchemy(app)
 
 from is_sensors import routes
+
+#db.drop_all()
+#db.create_all()
